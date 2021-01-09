@@ -8,14 +8,14 @@ from collections import deque
 
 class ProxyManager():
     
-    proxy_list        = deque([])
-    proxy_hist_dict   = {}
 
     def __init__(
         self,
         blacklist_cooldown='8hr',
         reuse_cooldown='10m'
     ):
+        self._proxy_list        = deque([])
+        self._proxy_hist_dict   = {}
         self.blacklist_cooldown = timeparse(blacklist_cooldown)
         self.reuse_cooldown     = timeparse(reuse_cooldown)
         
@@ -34,11 +34,11 @@ class ProxyManager():
 
 
     def blacklist_proxy(self, proxy):
-        self.proxy_hist_dict[proxy]['blacklist_time'] = datetime.datetime.now()
+        self._proxy_hist_dict[proxy]['blacklist_time'] = datetime.datetime.now()
 
     def log_proxy_request(self, proxy):
-        self.proxy_hist_dict[proxy]['last_request_time'] = datetime.datetime.now()
-        self.proxy_hist_dict[proxy]['request_count'] += 1
+        self._proxy_hist_dict[proxy]['last_request_time'] = datetime.datetime.now()
+        self._proxy_hist_dict[proxy]['request_count'] += 1
 
 
 
