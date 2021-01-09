@@ -6,6 +6,7 @@ import requests
 from pytimeparse.timeparse import timeparse
 import datetime
 import json
+import time
 
 class PubproxyManager(ProxyManager):
 
@@ -29,7 +30,6 @@ class PubproxyManager(ProxyManager):
         proxies = {'http':     f'http://{proxy}'}
         try:
             r = requests.get(self.proxy_test_url, proxies=proxies)
-            print(f'checked proxy {proxy} and got status {r.ok}')
             return r.ok
         except Exception as e:
             return False
@@ -41,7 +41,6 @@ class PubproxyManager(ProxyManager):
         for proxy_dict in proxy_data:
             proxy = proxy_dict['ipPort']
             if proxy not in self.proxy_hist_dict:
-                print(f'adding proxy {proxy}')
                 self.proxy_list.append(proxy)
                 self.proxy_hist_dict[proxy] = {
                     'blacklist_time': None,
@@ -55,16 +54,12 @@ class PubproxyManager(ProxyManager):
         while(True):
             while(len(self.proxy_list) == 0):
                 time.sleep(2)   # to stop API from rate limiting you
-                print('proxy list has 0 in it, grabbing more')
                 self.grab_proxies_from_api()
 
             proxy = self.proxy_list.popleft()
-            print(f'grabbed proxy {proxy}')
             if self.proxy_hist_dict[proxy]['blacklist_time'] is not None and self.proxy_hist_dict[proxy]['blacklist_time'] + datetime.timedelta(seconds=self.blacklist_cooldown) > datetime.datetime.now():
-                print('proxy is blacklisted')
                 continue
             if self.proxy_hist_dict[proxy]['last_request_time'] is not None and self.proxy_hist_dict[proxy]['last_request_time'] + datetime.timedelta(seconds=self.reuse_cooldown) > datetime.datetime.now():
-                print('cant reuse proxy so soon')
                 continue
 
             if not self.check_proxy(proxy):
