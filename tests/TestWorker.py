@@ -1,5 +1,5 @@
 import unittest
-from goatscraper.Worker import Worker
+from goatscraper.main.Worker import Worker
 
 worker = Worker(kwargs_test=1)
 
