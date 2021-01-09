@@ -1,8 +1,3 @@
-'''
-Creates the main thread manager used for controlling scraper threads
-'''
-import threading
-import datetime
 import time
 import logging
 
@@ -70,10 +65,10 @@ class ThreadManager():
         run_time=None,
         worker_check_cooldown=5,
     ):
-    '''
-    run_time: number of seconds to run the job
-    worker_check_cooldown: number of seconds to wait in between checking for dead workers
-    '''
+        '''
+        run_time: number of seconds to run the job
+        worker_check_cooldown: number of seconds to wait in between checking for dead workers
+        '''
         self.job_start_time = datetime.datetime.now()
         if run_time is not None:
             try:
