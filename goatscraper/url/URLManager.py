@@ -65,9 +65,13 @@ class URLManager():
 
     def __init__(
         self,
-        timeout_secs=120
+        urls=[],
+        timeout_secs=120,
+        max_url_fails=5
     ):
         self.timeout_secs           = timeout_secs
+        self.max_url_fails          = max_url_fails
+        self.add_urls(urls)
 
         self.__url_dict             = {}
         self.__url_priority_queue   = []
@@ -77,7 +81,7 @@ class URLManager():
         url_str
     ):
         if url_str not in self.__url_dict:
-            new_url = URL(url_str)
+            new_url = URL(url=url_str, failures_before_iter=self.max_url_fails)
             self.__url_dict[url_str] = new_url
             heapq.heappush(self.__url_priority_queue, new_url)
 
