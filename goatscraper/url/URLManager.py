@@ -95,11 +95,11 @@ class URLManager():
                 heapq.heappush(self.__url_priority_queue, url_inst)
 
     def grab_url(self):
-        if len(self.__url_list) == 0:
+        if len(self.__url_priority_queue) == 0:
             self.check_url_timeouts()
-            if len(self.__url_list) == 0:
+            if len(self.__url_priority_queue) == 0:
                 return None
-        return heapq.heappop(self.__url_list).url        
+        return heapq.heappop(self.__url_priority_queue).url        
 
     def log_success(self, url_str):
         self.__url_dict[url_str].log_success()
