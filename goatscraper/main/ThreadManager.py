@@ -41,7 +41,7 @@ class ThreadManager():
     def dereference_dead_workers(self):
         worker_idx_to_deref = []
         for i, worker_dict in enumerate(self.__worker_list):
-            if not worker['thread'].is_alive():
+            if not worker_dict['thread'].is_alive():
                 worker_idx_to_deref.append(i)
         
         for i in sorted(worker_idx_to_deref, reverse=True): # delete references to dicts from the worker list
@@ -49,7 +49,7 @@ class ThreadManager():
 
     # create new workers to ensure there are as many threads running as the specified target threads
     def make_new_workers(self):
-        num_workers_to_create = self.target_workers - len(__worker_list) 
+        num_workers_to_create = self.target_workers - len(self.__worker_list) 
         for _ in range(num_workers_to_create):
             self.__worker_list.append(self.__instantiate_new_worker)
             self.__worker_list[-1]['thread'].start()    # start the thread after adding to the list of workers
