@@ -71,10 +71,12 @@ class URLManager():
     ):
         self.timeout_secs           = timeout_secs
         self.max_url_fails          = max_url_fails
-        self.add_urls(urls)
-
+        
         self.__url_dict             = {}
         self.__url_priority_queue   = []
+        
+        self.add_urls(urls)
+
 
     def add_url(
         self,
