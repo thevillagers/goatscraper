@@ -1,9 +1,9 @@
 import time
 import logging
+import datetime
 
 class ThreadManager():
 
-    __worker_list           = []
 
     def __init__(
         self,
@@ -14,6 +14,9 @@ class ThreadManager():
         self.worker_class       = worker_class
         self.target_workers     = target_workers
         self.kwargs             = kwargs
+
+        self.__worker_list      = []
+
         self.job_start_time     = None
         self.job_end_time       = None
 
@@ -51,7 +54,7 @@ class ThreadManager():
     def make_new_workers(self):
         num_workers_to_create = self.target_workers - len(self.__worker_list) 
         for _ in range(num_workers_to_create):
-            self.__worker_list.append(self.__instantiate_new_worker)
+            self.__worker_list.append(self.__instantiate_new_worker())
             self.__worker_list[-1]['thread'].start()    # start the thread after adding to the list of workers
     
     # dereference all workers
