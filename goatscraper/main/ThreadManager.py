@@ -9,7 +9,7 @@ class ThreadManager():
     def __init__(
         self,
         worker_class,
-        target_workers=3,
+        target_workers,
         **kwargs
     ):
         self.worker_class       = worker_class
