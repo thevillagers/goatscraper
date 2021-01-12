@@ -10,10 +10,12 @@ class ThreadManager():
         self,
         worker_class,
         target_workers,
+        worker_iter_timeout=None,
         **kwargs
     ):
         self.worker_class       = worker_class
         self.target_workers     = target_workers
+        self.worker_iter_timeout = worker_iter_timeout
         self.kwargs             = kwargs
 
         self.__worker_list      = []
@@ -46,6 +48,10 @@ class ThreadManager():
         worker_idx_to_deref = []
         for i, worker_dict in enumerate(self.__worker_list):
             if not worker_dict['thread'].is_alive():
+                worker_idx_to_deref.append(i)
+
+            # if the worker has timed out then also deref it
+            if self.worker_iter_timeout is not None and worker_dict['instance'].last_iter_timestamp + datetime.timedelta(seconds=self.worker_iter_timeout) < datetime.datetime.now():
                 worker_idx_to_deref.append(i)
         
         for i in sorted(worker_idx_to_deref, reverse=True): # delete references to dicts from the worker list

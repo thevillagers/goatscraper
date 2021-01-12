@@ -4,6 +4,7 @@ Implements the URL Manager class. Default object to handle URL management for sc
 from collections import deque
 import heapq 
 import datetime 
+import threading
 
 class URL():
     
@@ -63,6 +64,8 @@ class URL():
 
 class URLManager():
 
+    __url_lock = threading.Lock()
+
     def __init__(
         self,
         urls=[],
@@ -82,37 +85,43 @@ class URLManager():
         self,
         url_str
     ):
-        if url_str not in self.__url_dict:
-            new_url = URL(url=url_str, failures_before_iter=self.max_url_fails)
-            self.__url_dict[url_str] = new_url
-            heapq.heappush(self.__url_priority_queue, new_url)
+        with self.__url_lock:
+            if url_str not in self.__url_dict:
+                new_url = URL(url=url_str, failures_before_iter=self.max_url_fails)
+                self.__url_dict[url_str] = new_url
+                heapq.heappush(self.__url_priority_queue, new_url)
 
     def add_urls(
         self,
         url_str_list
     ):
-        for url_str in url_str_list:
-            self.add_url(url_str)
+        with self.__url_lock:
+            for url_str in url_str_list:
+                self.add_url(url_str)
 
     def check_url_timeouts(self):
-        for url_str, url_inst in self.__url_dict.items():
-            if url_inst.in_use and url_inst.last_returned + datetime.timedelta(seconds=self.timeout_secs) > datetime.datetime.now():
-                url_inst.log_timeout()
-                heapq.heappush(self.__url_priority_queue, url_inst)
+        with self.__url_lock:
+            for url_str, url_inst in self.__url_dict.items():
+                if url_inst.in_use and url_inst.last_returned + datetime.timedelta(seconds=self.timeout_secs) > datetime.datetime.now():
+                    url_inst.log_timeout()
+                    heapq.heappush(self.__url_priority_queue, url_inst)
 
     def grab_url(self):
-        if len(self.__url_priority_queue) == 0:
-            self.check_url_timeouts()
+        with self.__url_lock:
             if len(self.__url_priority_queue) == 0:
-                return None
-        return heapq.heappop(self.__url_priority_queue).url        
+                self.check_url_timeouts()
+                if len(self.__url_priority_queue) == 0:
+                    return None
+            return heapq.heappop(self.__url_priority_queue).url        
 
     def log_success(self, url_str):
-        self.__url_dict[url_str].log_success()
-        heapq.heappush(self.__url_priority_queue, self.__url_dict[url_str])
+        with self.__url_lock:
+            self.__url_dict[url_str].log_success()
+            heapq.heappush(self.__url_priority_queue, self.__url_dict[url_str])
 
     def log_failure(self, url_str):
-        self.__url_dict[url_str].log_failure()
-        heapq.heappush(self.__url_priority_queue, self.__url_dict[url_str])
+        with self.__url_lock:
+            self.__url_dict[url_str].log_failure()
+            heapq.heappush(self.__url_priority_queue, self.__url_dict[url_str])
 
         
