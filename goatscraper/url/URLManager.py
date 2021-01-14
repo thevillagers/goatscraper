@@ -59,7 +59,12 @@ class URL():
     def log_timeout(self):
         self.log_failure()
         self.timeouts += 1
-        self.last_timeout = datetime.datetime.now() 
+        self.last_timeout = datetime.datetime.now()
+
+    def grab_url(self):
+        self.in_use = True
+        self.last_returned = datetime.datetime.now()
+        return self.url
 
 
 class URLManager():
@@ -102,7 +107,7 @@ class URLManager():
     def check_url_timeouts(self):
         with self.__url_lock:
             for url_str, url_inst in self.__url_dict.items():
-                if url_inst.in_use and url_inst.last_returned + datetime.timedelta(seconds=self.timeout_secs) > datetime.datetime.now():
+                if url_inst.in_use and url_inst.last_returned + datetime.timedelta(seconds=self.timeout_secs) < datetime.datetime.now():
                     url_inst.log_timeout()
                     heapq.heappush(self.__url_priority_queue, url_inst)
 
@@ -112,7 +117,7 @@ class URLManager():
                 self.check_url_timeouts()
                 if len(self.__url_priority_queue) == 0:
                     return None
-            return heapq.heappop(self.__url_priority_queue).url        
+            return heapq.heappop(self.__url_priority_queue).grab_url()        
 
     def log_success(self, url_str):
         with self.__url_lock:
