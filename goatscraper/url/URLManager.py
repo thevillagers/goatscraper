@@ -75,7 +75,8 @@ class URLManager():
         self,
         urls=[],
         timeout_secs=120,
-        max_url_fails=5
+        max_url_fails=5,
+        velocity_calc_interval=600
     ):
         self.timeout_secs           = timeout_secs
         self.max_url_fails          = max_url_fails
@@ -83,7 +84,9 @@ class URLManager():
         self.__url_dict             = {}
         self.__url_priority_queue   = []
         
-        self.add_urls(urls)
+        self._initialized_time = datetime.datetime.now()
+        self._successes              = 0
+        self._failures               = 0
 
 
     def add_url(
@@ -108,6 +111,7 @@ class URLManager():
         with self.__url_lock:
             for url_str, url_inst in self.__url_dict.items():
                 if url_inst.in_use and url_inst.last_returned + datetime.timedelta(seconds=self.timeout_secs) < datetime.datetime.now():
+                    self.failures += 1
                     url_inst.log_timeout()
                     heapq.heappush(self.__url_priority_queue, url_inst)
 
@@ -121,12 +125,18 @@ class URLManager():
 
     def log_success(self, url_str):
         with self.__url_lock:
+            self._successes += 1
             self.__url_dict[url_str].log_success()
             heapq.heappush(self.__url_priority_queue, self.__url_dict[url_str])
 
     def log_failure(self, url_str):
         with self.__url_lock:
+            self.failures += 1
             self.__url_dict[url_str].log_failure()
             heapq.heappush(self.__url_priority_queue, self.__url_dict[url_str])
+
+    def get_velocity(self):
+        print(f'Success velocity: {self._successes / ((datetime.datetime.now() - self._initialized_time).total_seconds / 60.0)} successes per minute')
+        print(f'Failure velocity: {self._failures / ((datetime.datetime.now() - self._initialized_time).total_seconds / 60.0)} failures per minute')
 
         
