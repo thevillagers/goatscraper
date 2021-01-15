@@ -1,5 +1,4 @@
 # goatscraper
 
-A web scraping framework made by GOAT Housing LLC under the MIT license.
+A web scraping framework under MIT license
 
-Intended to quickly setup automated web scraping pipelines
